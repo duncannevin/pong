@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	    <title>Pong</title>
+		<!-- lodash plugin -->
+		<script src="lodash.js"></script>
+		<!-- jquery plugin -->
+		<script src="jquery-3.1.1.js"></script>
+		<!-- normalize the css -->
+		<style src="normalize.css"></style>
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<style>
+			html, body, .container{
+				height: 100%;
+				width: 100%;
+				padding: 0;
+			}
+			.container{
+				text-align: center;
+			}
+			#table{
+				display: inline;
+				margin-top: 10em; 
+			}
+		</style>
+		<!-- makes page able to work on phones -->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	<body>
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+	      <div class="container">
+	        <div class="navbar-header">
+	          <a class="navbar-brand" href="#">Pong</a>
+	        </div>
+	       </div><!--/.nav-collapse -->
+    	</nav>
+
+	    <div class="container">
+			<canvas id="table" height="700" width="1000"></canvas>
+	    </div><!-- /.container -->
+		<!-- Latest compiled and minified JavaScript-->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+		<script>
+
+	((jquery) => {
+		let c = document.getElementById('table');
+		let ctx = c.getContext('2d');
+		//draw board with canvas...
+		let board = () => {	
+			//draw a table border...		
+			ctx.beginPath();
+			ctx.rect(20, 20, 960, 660);//x, y->top left corner, width height.
+			ctx.fillStyle = 'rgb(157, 157, 157)';
+			ctx.fill();
+			//draw net...
+			ctx.strokeRect(499, 0, 2, 700);
+			//drawing length wise center line...
+			ctx.beginPath();
+			ctx.moveTo(20, 350);
+			ctx.lineTo(980, 350);
+			ctx.stroke();
+		};
+		board();
+		//global object to track top/left coordinates...
+		let coords = {};
+		coords.left = [0, 300];
+		coords.right = [980, 300];
+		coords.ball = [350, 500];
+
+			//write a function that creates the ball...
+			this.ball = (x, y) => {//x, y params allow the user to move the paddles.
+				ctx.beginPath();
+				//center=(x, y) radius=30 angle=(0, 7)
+				ctx.arc(x, y, 30, 0, 7);
+				ctx.fillStyle = 'rgb(34, 34, 34)';
+				ctx.fill();
+			};
+
+
+		let PaddlesControl = () => {
+
+			let keyCodes = {};
+
+			let key = false;
+
+			//write a function that contains the paddles...
+			this.paddle = (x, y, direction) => {//x, y params allow the user to move the paddles.
+				if(direction === 'up'){
+					ctx.clearRect(x, y+20, 20, 100);
+				}else if(direction === 'down'){
+					ctx.clearRect(x, y-20, 20, 100);
+				}
+				ctx.beginPath();
+				ctx.rect(x, y, 20, 100);
+				ctx.fillStyle = 'rgb(34, 34, 34)';
+				ctx.fill();
+			};
+
+			//use closure to keep the correct data about each side...
+			this.event = (player) => {
+				//write a function that moves the paddles up or down...
+				let adjustCoords = (direction) => {
+					let dir;
+					//getting the direction of to adjust the coordinates based on the key code...
+					if(direction === 65 || direction === 76){
+						coords[player][1] -= 20;
+						dir = 'up';
+					}else{
+						coords[player][1] += 20;
+						dir = 'down';
+					}
+					this.paddle(coords[player][0], coords[player][1], dir);	
+					//trampoline that checks if the key has in fact been lifted...
+					setTimeout(function(){
+						if(!key){
+							return;
+							adjustCoords(direction);
+						}
+					}, 1);
+					return;
+				};
+				//check which player was passed in and add the appropriate data to the the keycode var...
+				if(player === 'left'){
+					keyCodes.up = 65;//A
+					keyCodes.down = 90;//Z
+				}else if(player = 'right'){
+					keyCodes.up = 76;//L
+					keyCodes.down = 188;//>
+				}	
+				document.addEventListener('keydown', (event) => {
+					if(event.keyCode === keyCodes.up || event.keyCode === keyCodes.down){
+						key = true;
+						adjustCoords(event.keyCode);
+					}
+				});
+				//event listener waiting for the correct keys to be lifted...
+				document.addEventListener('keyup', (event) => {
+					if(event.keyCode === keyCodes.up || event.keyCode === keyCodes.down){
+						key = false;
+					}
+				});
+			}	
+
+			return this;
+		};
+
+		let leftControl = PaddlesControl();
+		leftControl.event('left');
+		leftControl.paddle.apply(null, coords.left); 
+
+		let rightControl = PaddlesControl();
+		rightControl.event('right');
+		rightControl.paddle.apply(null, coords.right); 
+
+	})(window)
+
+
+		</script>
+	</body>
+</html>	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
