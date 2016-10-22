@@ -64,7 +64,17 @@
 			constructor() {
 
 				let score;
-				let direction = 0.5;
+				let directionX = 2;
+				let directionY = 0.05;
+				let ball = [50, 350];
+				let coords = {};
+				coords.left = [0, 300];
+				coords.right = [980, 300];
+
+				//keeps a copy of the paddles locations in closure...
+				this.pLocation = (loc, player) => {
+					coords[player] = loc;
+				};
 
 				//draw board with canvas...
 				this.board = (x, y, w, h) => {
@@ -92,30 +102,45 @@
 					ctx.arc(x, y, 30, 0, 7);
 					ctx.fillStyle = 'rgb(34, 34, 34)';
 					ctx.fill();
+					ctx.closePath();
 				};
 
 				//function that adjusts the balls coordinates...
 				this.ballCoordinates = () => {
-					coords.ball[0] += direction;
-					console.log(coords.right)
+					ball = ball || coords.left.map((val) => {return val + 50});
+					ball[0] += directionX;
+					ball[1] += directionY;
 				};
 
 				//function that moves the ball...
 				this.moveBall = () => {
 
+					let whoHit = 'left';
+					//function adjusts the direction of the ball based on where it hits the paddle...
+					let a = () => {
+						if(ball[1] >= coords[whoHit][1] && ball[1] < coords[whoHit][1] + 33){
+							directionY = -0.15
+							return;
+						}
+						if(ball[1] <= coords[whoHit][1] + 100 && ball[1] > coords[whoHit][1] + 77){
+							directionY = +0.15
+							return;
+						}
+						directionY = -directionY;
+					};
+					//adjust call coordinates...
 					this.ballCoordinates();
-
-					this.drawBall.apply(null, coords.ball);
-
-					//if the ball is in the range of the paddle top to bottom...
-					if(coords.ball[1] > coords.right[1] || coords.ball[1] > coords.left[1] && coords.ball[1] < coords.right[1] - 100 || coords.ball[1] < coords.left[1] - 100){
-						//if the ball hits the face of the paddle...
-						if(coords.ball[0] + 30 === coords.right[0]){
-							direction = -1;
-						}
-						if(coords.ball[0] - 50 === coords.left[0]){
-							direction = 1;
-						}
+					//draw the ball...
+					this.drawBall(ball[0], ball[1]);
+					if(ball[0] === coords.right[0] - 30 && ball[1] < coords.right[1] + 100 && ball[1] > coords.right[1]){
+						whoHit = 'right';
+						directionX = -directionX;
+						a();
+					}
+					if(ball[0] === coords.left[0] + 50 && ball[1] < coords.left[1] + 100 && ball[1] > coords.left[1]){
+						whoHit = 'left';
+						directionX = -directionX;
+						a();
 					}
 				};
 			};
@@ -162,41 +187,50 @@
 					}
 				};
 
-				this.controlD = (event) => {
+				this.moveP = (event) => {
+
+					let newCoords;
+
 					if(event.keyCode === up || event.keyCode === down){
-						this.adjustCoords(event.keyCode);//change coordinates.
+						newCoords = this.adjustCoords(event.keyCode);//change coordinates.
 						this.paddle(coords[player][0], coords[player][1], dir);//moves paddle based on new coordinates.
 					}
 				};
+
+				this.returnCoords = () => {
+					return coords[player];
+				};
 			};
 		}
-		//start position for the ball...(will change the current serve later...)
-		coords.ball = [coords.left[0] + 50, coords.left[1] + 50]
+
 		//game...
 		let game = new Game();
 		game.board(20, 20, 960, 660);
-		game.drawBall.apply(this, coords.ball);
-		setInterval(game.moveBall, 2);
+		setInterval(game.moveBall, 1);
 		//end//
 
 		//left player...
 		let left = new Paddles('left', 65, 90);
 		left.paddle.apply(this, coords.left);
+		game.pLocation(left.returnCoords());
 		//end//
 
 		//right player...
 		let right = new Paddles('right', 76, 188);
 		right.paddle.apply(this, coords.right);
+		game.pLocation(left.returnCoords());
 		//end//
 
 		//event listeners...
 		//looks for up and down keys to be pressed for each side...
 		document.addEventListener('keydown', (event) => {
 			if(event.keyCode === 65 || event.keyCode === 90){
-				left.controlD(event);
+				left.moveP(event);
+				game.pLocation(left.returnCoords(), 'left');
 			}
 			if(event.keyCode === 76 || event.keyCode === 188){
-				right.controlD(event);
+				right.moveP(event);
+				game.pLocation(right.returnCoords(), 'right');
 			}
 		});
 		//end//
