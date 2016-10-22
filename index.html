@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+</body>
+</html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -25,7 +27,7 @@
 			}
 			#table{
 				display: inline;
-				margin-top: 10em; 
+				margin-top: 10em;
 			}
 		</style>
 		<!-- makes page able to work on phones -->
@@ -47,122 +49,165 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 		<script>
 
-	((jquery) => {
+	(() => {
 		let c = document.getElementById('table');
 		let ctx = c.getContext('2d');
-		//draw board with canvas...
-		let board = () => {	
-			//draw a table border...		
-			ctx.beginPath();
-			ctx.rect(20, 20, 960, 660);//x, y->top left corner, width height.
-			ctx.fillStyle = 'rgb(157, 157, 157)';
-			ctx.fill();
-			//draw net...
-			ctx.strokeRect(499, 0, 2, 700);
-			//drawing length wise center line...
-			ctx.beginPath();
-			ctx.moveTo(20, 350);
-			ctx.lineTo(980, 350);
-			ctx.stroke();
-		};
-		board();
+
 		//global object to track top/left coordinates...
 		let coords = {};
 		coords.left = [0, 300];
 		coords.right = [980, 300];
-		coords.ball = [350, 500];
+		coords.ball = [0, 0];
 
-			//write a function that creates the ball...
-			this.ball = (x, y) => {//x, y params allow the user to move the paddles.
-				ctx.beginPath();
-				//center=(x, y) radius=30 angle=(0, 7)
-				ctx.arc(x, y, 30, 0, 7);
-				ctx.fillStyle = 'rgb(34, 34, 34)';
-				ctx.fill();
+		//Functions for loading board and the ball...
+		class Game{
+			constructor() {
+
+				let score;
+				let direction = 0.5;
+
+				//draw board with canvas...
+				this.board = (x, y, w, h) => {
+					// draw a table border...
+					ctx.beginPath();
+					ctx.rect(x, y, w, h);//x, y->top left corner, width height.
+					ctx.fillStyle = 'rgb(157, 157, 157)';
+					ctx.fill();
+					//draw net...
+					ctx.strokeRect(499, 0, 2, 700);
+					//drawing length wise center line...
+					ctx.beginPath();
+					ctx.moveTo(20, 350);
+					ctx.lineTo(980, 350);
+					ctx.stroke();
+				};
+
+				//write a function that creates the ball...
+				this.drawBall = (x, y) => {//x, y params allow the user to move the paddles.
+					//erases old ball...
+					this.board(20, 20, 960, 660);
+					//draws ball...
+					ctx.beginPath();
+					//center=(x, y) radius=30 angle=(0, 7)
+					ctx.arc(x, y, 30, 0, 7);
+					ctx.fillStyle = 'rgb(34, 34, 34)';
+					ctx.fill();
+				};
+
+				//function that adjusts the balls coordinates...
+				this.ballCoordinates = () => {
+					coords.ball[0] += direction;
+					console.log(coords.right)
+				};
+
+				//function that moves the ball...
+				this.moveBall = () => {
+
+					this.ballCoordinates();
+
+					this.drawBall.apply(null, coords.ball);
+
+					//if the ball is in the range of the paddle top to bottom...
+					if(coords.ball[1] > coords.right[1] || coords.ball[1] > coords.left[1] && coords.ball[1] < coords.right[1] - 100 || coords.ball[1] < coords.left[1] - 100){
+						//if the ball hits the face of the paddle...
+						if(coords.ball[0] + 30 === coords.right[0]){
+							direction = -1;
+						}
+						if(coords.ball[0] - 50 === coords.left[0]){
+							direction = 1;
+						}
+					}
+				};
 			};
+		}
 
+		//functions pertaining to the individual pleyers, ie paddles...
+		class Paddles{
+			constructor(player, n, s) {//up === keycode for up, down === keycode for down.
 
-		let PaddlesControl = () => {
+				let up, down, dir;//up=keycode for up//down=keycode for down//dir=direction the paddle is moving.
 
-			let keyCodes = {};
+				//sets the appropriate keycode...
+				(function() {
+					up = n;
+					down = s;
+				})()
 
-			let key = false;
+				//write a function that contains the paddles...
+				this.paddle = (x, y, direction) => {//x, y params allow the user to move the paddles.
+					//conditional that deletes the existing paddle each iteration...
+					if(direction === 'up'){
+						ctx.clearRect(x, y+40, 20, 100);
+					}else if(direction === 'down'){
+						ctx.clearRect(x, y-40, 20, 100);
+					}
+					//draws paddle...
+					ctx.beginPath();
+					ctx.rect(x, y, 20, 100);
+					ctx.fillStyle = 'rgb(34, 34, 34)';
+					ctx.fill();
+				};
 
-			//write a function that contains the paddles...
-			this.paddle = (x, y, direction) => {//x, y params allow the user to move the paddles.
-				if(direction === 'up'){
-					ctx.clearRect(x, y+20, 20, 100);
-				}else if(direction === 'down'){
-					ctx.clearRect(x, y-20, 20, 100);
-				}
-				ctx.beginPath();
-				ctx.rect(x, y, 20, 100);
-				ctx.fillStyle = 'rgb(34, 34, 34)';
-				ctx.fill();
-			};
-
-			//use closure to keep the correct data about each side...
-			this.event = (player) => {
-				//write a function that moves the paddles up or down...
-				let adjustCoords = (direction) => {
-					let dir;
+				//adjust the coordinates each time the paddle is moved...
+				this.adjustCoords = (direction) => {
 					//getting the direction of to adjust the coordinates based on the key code...
-					if(direction === 65 || direction === 76){
-						coords[player][1] -= 20;
+					//if direction is x and coors[1] is correct....
+					//also makes sure the paddles cannot leave the edge of the board...
+					if(direction === 65 && coords[player][1] > 0 || direction === 76 && coords[player][1] > 0){
+						coords[player][1] -= 40;
 						dir = 'up';
-					}else{
-						coords[player][1] += 20;
+					}else if(direction === 90 && coords[player][1] < 620 || direction === 188 && coords[player][1] < 620){
+						coords[player][1] += 40;
 						dir = 'down';
 					}
-					this.paddle(coords[player][0], coords[player][1], dir);	
-					//trampoline that checks if the key has in fact been lifted...
-					setTimeout(function(){
-						if(!key){
-							return;
-							adjustCoords(direction);
-						}
-					}, 1);
-					return;
 				};
-				//check which player was passed in and add the appropriate data to the the keycode var...
-				if(player === 'left'){
-					keyCodes.up = 65;//A
-					keyCodes.down = 90;//Z
-				}else if(player = 'right'){
-					keyCodes.up = 76;//L
-					keyCodes.down = 188;//>
-				}	
-				document.addEventListener('keydown', (event) => {
-					if(event.keyCode === keyCodes.up || event.keyCode === keyCodes.down){
-						key = true;
-						adjustCoords(event.keyCode);
+
+				this.controlD = (event) => {
+					if(event.keyCode === up || event.keyCode === down){
+						this.adjustCoords(event.keyCode);//change coordinates.
+						this.paddle(coords[player][0], coords[player][1], dir);//moves paddle based on new coordinates.
 					}
-				});
-				//event listener waiting for the correct keys to be lifted...
-				document.addEventListener('keyup', (event) => {
-					if(event.keyCode === keyCodes.up || event.keyCode === keyCodes.down){
-						key = false;
-					}
-				});
-			}	
+				};
+			};
+		}
+		//start position for the ball...(will change the current serve later...)
+		coords.ball = [coords.left[0] + 50, coords.left[1] + 50]
+		//game...
+		let game = new Game();
+		game.board(20, 20, 960, 660);
+		game.drawBall.apply(this, coords.ball);
+		setInterval(game.moveBall, 2);
+		//end//
 
-			return this;
-		};
+		//left player...
+		let left = new Paddles('left', 65, 90);
+		left.paddle.apply(this, coords.left);
+		//end//
 
-		let leftControl = PaddlesControl();
-		leftControl.event('left');
-		leftControl.paddle.apply(null, coords.left); 
+		//right player...
+		let right = new Paddles('right', 76, 188);
+		right.paddle.apply(this, coords.right);
+		//end//
 
-		let rightControl = PaddlesControl();
-		rightControl.event('right');
-		rightControl.paddle.apply(null, coords.right); 
+		//event listeners...
+		//looks for up and down keys to be pressed for each side...
+		document.addEventListener('keydown', (event) => {
+			if(event.keyCode === 65 || event.keyCode === 90){
+				left.controlD(event);
+			}
+			if(event.keyCode === 76 || event.keyCode === 188){
+				right.controlD(event);
+			}
+		});
+		//end//
+
 
 	})(window)
 
 
 		</script>
 	</body>
-</html>	
+</html>
 
 
 
