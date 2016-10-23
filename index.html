@@ -22,12 +22,53 @@
 				width: 100%;
 				padding: 0;
 			}
+			.form-control:hover, .btn:hover{
+				-moz-box-shadow: 0 0 10px rgb(92, 184, 92);
+				-webkit-box-shadow: 0 0 10px rgb(92, 184, 92);
+				box-shadow: 0 0 10px rgb(92, 184, 92);
+			}
 			.container{
 				text-align: center;
 			}
 			#table{
-				display: inline;
+				display: none;
 				margin-top: 10em;
+				height: 40em;
+				width: 60em;
+				border-radius: 6px;
+				background-color: rgb(238, 238, 238);
+				-moz-box-shadow: 0 0 30px rgb(92, 184, 92);
+				-webkit-box-shadow: 0 0 30px rgb(92, 184, 92);
+				box-shadow: 0 0 30px rgb(92, 184, 92);
+			}
+			#table, .sign-in{
+				border: 1px solid black;
+			}
+			.sign-in{
+				margin: 0 auto;
+				width: 40em;
+			}
+			.sign-in{
+				margin-top: 20%;
+			}
+			.glow{
+				animation: glow 3s infinite alternate;
+			}
+			@keyframes glow{
+				to{
+					box-shadow: 0 0 30px rgb(92, 184, 92);
+					text-shadow: 0 0 10px rgb(92, 184, 92);
+					color: rgb(238, 238, 238);
+				}
+			}
+			.input-group{
+				margin-bottom: 5px;
+			}
+			.player-one, .player-two, .one-player-button button{
+				width: 100%;
+			}
+			.one-player-button{
+				width: 40%;
 			}
 		</style>
 		<!-- makes page able to work on phones -->
@@ -39,12 +80,12 @@
 	        <div class="navbar-header">
 	          <a class="navbar-brand" href="#">Pong</a>
 	        </div>
-	       </div><!--/.nav-collapse -->
-    	</nav>
+       </div><!--/.nav-collapse -->
+  	</nav>
 
-	    <div class="container">
-			<canvas id="table" height="700" width="1000"></canvas>
-	    </div><!-- /.container -->
+    <div class="container main-content">
+			<canvas id="table"></canvas>
+    </div><!-- /.container -->
 		<!-- Latest compiled and minified JavaScript-->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 		<script>
@@ -52,6 +93,9 @@
 	(() => {
 		let c = document.getElementById('table');
 		let ctx = c.getContext('2d');
+
+		c.width = 1000;
+		c.height = 700;
 
 		//global object to track top/left coordinates...
 		let coords = {};
@@ -78,10 +122,10 @@
 
 				//draw board with canvas...
 				this.board = (x, y, w, h) => {
-					// draw a table border...
+					// draw a table...
 					ctx.beginPath();
 					ctx.rect(x, y, w, h);//x, y->top left corner, width height.
-					ctx.fillStyle = 'rgb(157, 157, 157)';
+					ctx.fillStyle = 'rgb(92, 184, 92)';
 					ctx.fill();
 					//draw net...
 					ctx.strokeRect(499, 0, 2, 700);
@@ -128,7 +172,7 @@
 						}
 						directionY = -directionY;
 					};
-					//adjust call coordinates...
+					//adjust ball coordinates...
 					this.ballCoordinates();
 					//draw the ball...
 					this.drawBall(ball[0], ball[1]);
@@ -143,7 +187,7 @@
 						a();
 					}
 				};
-			};
+			}
 		}
 
 		//functions pertaining to the individual pleyers, ie paddles...
@@ -160,12 +204,15 @@
 
 				//write a function that contains the paddles...
 				this.paddle = (x, y, direction) => {//x, y params allow the user to move the paddles.
-					//conditional that deletes the existing paddle each iteration...
-					if(direction === 'up'){
-						ctx.clearRect(x, y+40, 20, 100);
-					}else if(direction === 'down'){
-						ctx.clearRect(x, y-40, 20, 100);
-					}
+					//creates value to add or subtract for recoloring paddle space...
+					let dir = direction === 'up' ? 40 : -40;
+
+					//recoloring paddle space...
+					ctx.beginPath();
+					ctx.rect(x, y + dir, 20, 100);
+					ctx.fillStyle = 'rgb(238, 238, 238)';
+					ctx.fill();
+
 					//draws paddle...
 					ctx.beginPath();
 					ctx.rect(x, y, 20, 100);
@@ -200,13 +247,34 @@
 				this.returnCoords = () => {
 					return coords[player];
 				};
-			};
+			}
 		}
+
+		class Utilities{
+			constructor() {
+
+					let $cont = $('.main-content');
+					let $tab = $('#table');
+				//renders the welcome page the the DOM...
+				this.welcome = () => {
+
+					let $sign = $('<div class="jumbotron sign-in"></div>');
+
+					$sign.append('<h2>Welcome to</h2><h1 class="glow">PONG!</h1>');
+					$sign.append('<div class="input-group player-one"><input type="text" class="form-control" name="player1" placeholder="Player one username"></div>');
+					$sign.append('<div class="input-group player-two"><input type="text" class="form-control" name="player2" placeholder="Player two username"><div class="input-group-btn one-player-button"><button type="button" class="btn btn-default">One player mode</button>/div></div>');
+					$sign.append('<p><a class="btn btn-lg btn-success start-btn" href="#" role="button">Let\'s Play!</a></p>');
+					$cont.append($sign);
+				};
+			}
+		}
+		//start game...
+		let start = new Utilities();
+		start.welcome();
 
 		//game...
 		let game = new Game();
-		game.board(20, 20, 960, 660);
-		setInterval(game.moveBall, 1);
+		// setInterval(game.moveBall, 1);
 		//end//
 
 		//left player...
@@ -221,9 +289,11 @@
 		game.pLocation(left.returnCoords());
 		//end//
 
+		let doc = document;
+
 		//event listeners...
 		//looks for up and down keys to be pressed for each side...
-		document.addEventListener('keydown', (event) => {
+		doc.addEventListener('keydown', (event) => {
 			if(event.keyCode === 65 || event.keyCode === 90){
 				left.moveP(event);
 				game.pLocation(left.returnCoords(), 'left');
@@ -231,6 +301,22 @@
 			if(event.keyCode === 76 || event.keyCode === 188){
 				right.moveP(event);
 				game.pLocation(right.returnCoords(), 'right');
+			}
+		});
+		doc.addEventListener('click', (event) => {
+			let e = event;
+			//removes the sign in sheet...
+			if(event.target.classList.contains('start-btn')){
+				$('.sign-in').fadeOut({
+					duration: '800',
+					complete: function(){
+						//renders the board...
+						$('#table').fadeIn({
+							duration: '800',
+							complete: game.board(20, 20, 960, 660)
+						});
+					}
+				});
 			}
 		});
 		//end//
