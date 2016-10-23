@@ -90,6 +90,7 @@
 				opacity: .5;
 			}
 			.contains-message{
+				display: none;
 				width: 10em;
 				font-weight: bold;
 				font-size: 20px;
@@ -314,9 +315,11 @@
 		//start game...
 		let start = new Utilities();
 		start.welcome();
+		start.infoSpot();
 
 		//game...
 		let game = new Game();
+		game.board(20, 20, 960, 660);
 		// setInterval(game.moveBall, 1);
 		//end//
 
@@ -356,9 +359,12 @@
 						//renders the board...
 						$('#table, .dropdown').fadeIn({
 							duration: '800',
-							complete: game.board(20, 20, 960, 660)
+							complete: function(){
+								$('.contains-message').fadeIn({
+									duration: 800
+								});
+							}
 						});
-						start.infoSpot();
 					}
 				});
 			}
