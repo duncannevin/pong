@@ -21,8 +21,13 @@
 				height: 100%;
 				width: 100%;
 				padding: 0;
+				background-color: rgb(34, 34, 34);
 			}
-			.form-control:hover, .btn:hover{
+			.navbar{
+				padding-left: 10px;
+				padding-right: 40px;
+			}
+			.form-control:hover, .btn:hover, .info a:hover{
 				-moz-box-shadow: 0 0 10px rgb(92, 184, 92);
 				-webkit-box-shadow: 0 0 10px rgb(92, 184, 92);
 				box-shadow: 0 0 10px rgb(92, 184, 92);
@@ -30,26 +35,33 @@
 			.container{
 				text-align: center;
 			}
-			#table{
-				display: none;
-				margin-top: 10em;
-				height: 40em;
-				width: 60em;
-				border-radius: 6px;
-				background-color: rgb(238, 238, 238);
+			.shadow{
 				-moz-box-shadow: 0 0 30px rgb(92, 184, 92);
 				-webkit-box-shadow: 0 0 30px rgb(92, 184, 92);
 				box-shadow: 0 0 30px rgb(92, 184, 92);
 			}
+			.contains-message, #table{
+				border-radius: 6px;
+			}
+			#table, .sign-in, .contains-message{
+				background-color: rgb(238, 238, 238);
+			}
+			#table{
+				display: none;
+				height: 40em;
+				width: 60em;
+			}
 			#table, .sign-in{
 				border: 1px solid black;
 			}
-			.sign-in{
+			.contains-message, .sign-in{
 				margin: 0 auto;
-				width: 40em;
 			}
 			.sign-in{
-				margin-top: 20%;
+				width: 40em;
+			}
+			.sign-in, #table{
+				margin-top: 10em;
 			}
 			.glow{
 				animation: glow 3s infinite alternate;
@@ -70,6 +82,22 @@
 			.one-player-button{
 				width: 40%;
 			}
+			.info a{
+				color: rgb(157, 157, 157);
+				text-decoration: none;
+			}
+			.dim{
+				opacity: .5;
+			}
+			.contains-message{
+				width: 10em;
+				font-weight: bold;
+				font-size: 20px;
+			}
+			.glyphicon{
+				font-size: 40px;
+				padding-top: 6px;
+			}
 		</style>
 		<!-- makes page able to work on phones -->
 		<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,7 +112,8 @@
   	</nav>
 
     <div class="container main-content">
-			<canvas id="table"></canvas>
+			<canvas id="table" class="shadow"></canvas>
+			<p class="info"><a href="#">Game Info</a></p>
     </div><!-- /.container -->
 		<!-- Latest compiled and minified JavaScript-->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
@@ -258,13 +287,27 @@
 				//renders the welcome page the the DOM...
 				this.welcome = () => {
 
-					let $sign = $('<div class="jumbotron sign-in"></div>');
+					let $sign = $('<div class="jumbotron sign-in shadow"></div>');
 
 					$sign.append('<h2>Welcome to</h2><h1 class="glow">PONG!</h1>');
 					$sign.append('<div class="input-group player-one"><input type="text" class="form-control" name="player1" placeholder="Player one username"></div>');
 					$sign.append('<div class="input-group player-two"><input type="text" class="form-control" name="player2" placeholder="Player two username"><div class="input-group-btn one-player-button"><button type="button" class="btn btn-default">One player mode</button>/div></div>');
 					$sign.append('<p><a class="btn btn-lg btn-success start-btn" href="#" role="button">Let\'s Play!</a></p>');
 					$cont.append($sign);
+				};
+
+				//function makes table dim and points at the drop down with a message...
+				this.infoSpot = () => {
+
+					let $here = $('<div class="contains-message shadow"></div>');
+
+					$here.append('<span class="glyphicon glyphicon-arrow-up"></span>');
+
+					$here.append('<div class="alert"><p>Click<span class="glow">Game Info</span></p><p>to get started.</p></div>');
+
+					$('#table').addClass('dim');
+					$('.info a').addClass('glow');
+					$cont.append($here);
 				};
 			}
 		}
@@ -306,21 +349,21 @@
 		doc.addEventListener('click', (event) => {
 			let e = event;
 			//removes the sign in sheet...
-			if(event.target.classList.contains('start-btn')){
+			if(e.target.classList.contains('start-btn')){
 				$('.sign-in').fadeOut({
 					duration: '800',
 					complete: function(){
 						//renders the board...
-						$('#table').fadeIn({
+						$('#table, .dropdown').fadeIn({
 							duration: '800',
 							complete: game.board(20, 20, 960, 660)
 						});
+						start.infoSpot();
 					}
 				});
 			}
 		});
 		//end//
-
 
 	})(window)
 
