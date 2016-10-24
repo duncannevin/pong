@@ -11,14 +11,23 @@
     coords.right = [980, 300];
     coords.ball = [0, 0];
 
+    //global user info...
+    let users = {};
+
+    //global score info...
+    let scores = {};
+    scores.left = 0;
+    scores.right = 0;
+
     //Functions for loading board and the ball...
     class Game{
       constructor() {
 
         let score;
-        let directionX = 2;
-        let directionY = 0.05;
-        let ball = [50, 350];
+        let ballRadius = 10;
+        let dx = 2;
+        let dy = -1;
+        let ball = [500, 350];
         let coords = {};
         coords.left = [0, 300];
         coords.right = [980, 300];
@@ -44,57 +53,67 @@
           ctx.stroke();
         };
 
+        //function that updates the global score object...
+        this.score = (side) => {
+          //increase score in object...
+          scores[side]++;
+        };
+
         //write a function that creates the ball...
         this.drawBall = (x, y) => {//x, y params allow the user to move the paddles.
-          //erases old ball...
-          this.board(20, 20, 960, 660);
           //draws ball...
           ctx.beginPath();
           //center=(x, y) radius=30 angle=(0, 7)
-          ctx.arc(x, y, 30, 0, 7);
+          ctx.arc(x, y, ballRadius, 0, Math.PI*2);
           ctx.fillStyle = 'rgb(34, 34, 34)';
           ctx.fill();
           ctx.closePath();
         };
 
-        //function that adjusts the balls coordinates...
-        this.ballCoordinates = () => {
-          ball = ball || coords.left.map((val) => {return val + 50});
-          ball[0] += directionX;
-          ball[1] += directionY;
-        };
-
         //function that moves the ball...
         this.moveBall = () => {
-
-          let whoHit = 'left';
-          //function adjusts the direction of the ball based on where it hits the paddle...
-          let a = () => {
-            if(ball[1] >= coords[whoHit][1] && ball[1] < coords[whoHit][1] + 33){
-              directionY = -0.15
-              return;
-            }
-            if(ball[1] <= coords[whoHit][1] + 100 && ball[1] > coords[whoHit][1] + 77){
-              directionY = +0.15
-              return;
-            }
-            //this ensures the ball can never travel in a straigh line...
-            directionY = -directionY;
-          };
-          //adjust ball coordinates...
-          this.ballCoordinates();
+          //clear board...
+          this.board(20, 20, 960, 660);
           //draw the ball...
-          this.drawBall(ball[0], ball[1]);
-          if(ball[0] === coords.right[0] - 30 && ball[1] < coords.right[1] + 100 && ball[1] > coords.right[1]){
-            whoHit = 'right';
-            directionX = -directionX;
-            a();
+          this.drawBall(ball[0] - (ballRadius-10), ball[1]);
+
+          //watches for the ball to hit right paddle...
+          if(ball[0] === coords.right[0] - (ballRadius)){
+
+            if(ball[1] > coords.right[1]-10 && ball[1] < (coords.right[1] + 110)){
+              dx = -dx;
+            }
           }
-          if(ball[0] === coords.left[0] + 50 && ball[1] < coords.left[1] + 100 && ball[1] > coords.left[1]){
-            whoHit = 'left';
-            directionX = -directionX;
-            a();
+
+          //watches for the ball to hit the left paddle...
+          if(ball[0] === (coords.left[0] + 20) + (ballRadius)){
+
+            if(ball[1] > (coords.left[1]-10) && ball[1] < (coords.left[1] + 110)){
+              dx = -dx;
+            }
           }
+
+          //this statement looks for the ball to go past the goal...
+          if(ball[0] === 10 || ball[0] === 990){
+
+            let side = dx < 0 ? 'right' : 'left';
+
+            this.score(side);
+            //stops function...
+            ball = [500, 350];
+            return;
+          }
+
+          //allows the ball to bounce off the top and bottom walls...
+          if(ball[1] === 20 + (ballRadius) || ball[1] === (700 - 20) - (ballRadius)){
+            dy = -dy;
+          }
+
+
+          ball[0] += dx;
+          ball[1] += dy;
+
+          setTimeout(this.moveBall, 8);
         };
       }
     }
@@ -119,13 +138,13 @@
           //recoloring paddle space...
           ctx.beginPath();
           ctx.rect(x, y + dir, 20, 100);
-          ctx.fillStyle = 'rgb(238, 238, 238)';
+          ctx.fillStyle = 'rgb(34, 34, 34)';
           ctx.fill();
 
           //draws paddle...
           ctx.beginPath();
           ctx.rect(x, y, 20, 100);
-          ctx.fillStyle = 'rgb(34, 34, 34)';
+          ctx.fillStyle = 'rgb(238, 238, 238)';
           ctx.fill();
         };
 
@@ -162,44 +181,143 @@
     class Utilities{
       constructor() {
 
-          let $cont = $('.main-content');
-          let $tab = $('#table');
-        //renders the welcome page the the DOM...
+        let $cont = $('.main-content');
+        let $tab = $('#table');
+
+        //animates a node up and down...
+        this.moveArrow = (node) => {
+
+          let move = this.moveArrow;
+
+          $(node).animate({
+            top: '+=198'},
+            1000,
+            function(){
+              $(node).hide();
+            }
+          );
+
+          $(node).animate({
+            top: '-=198'},
+            1000,
+            function(){
+              setTimeout(function(){
+                $(node).fadeIn();
+                move(node);
+              }, 250);
+            }
+          );
+        };
+
+        //function makes arrows bounce showing th user which way the keys move the paddle...
+        this.animateArrow = (node, bool) => {
+
+          //downward arrows...
+          if(bool === true){
+
+            $(node).animate({
+              top: '+=40'
+            }, 1000);
+
+            $(node).animate({
+              top: '-=40'
+            }, 1000);
+          //upward arrows...
+          }else{
+
+            $(node).animate({
+            top: '-=40'
+            }, 1000);
+            $(node).animate({
+              top: '+=40'
+            }, 1000);
+          }
+
+          setTimeout(this.animateArrow, 1, node, bool);
+        };
+
+        //function that updates global user information...
+        this.userInfo = (name1, name2) => {
+          users.left = name1;
+          users.right = name2;
+        };
+
+        //creates the welcome page...
         this.welcome = () => {
 
-          let $sign = $('<div class="jumbotron sign-in shadow"></div>');
+          let $sign= $('<div class="sign-in jumbotron _shadow _off-white _margin-auto _black-border"></div>');
 
           $sign.append('<h2>Welcome to</h2><h1 class="glow">PONG!</h1>');
           $sign.append('<div class="input-group player-one"><input type="text" class="form-control" name="player1" placeholder="Player one username"></div>');
-          $sign.append('<div class="input-group player-two"><input type="text" class="form-control" name="player2" placeholder="Player two username"><div class="input-group-btn one-player-button"><button type="button" class="btn btn-default">One player mode</button>/div></div>');
+          $sign.append('<div class="input-group player-two"><input type="text" class="form-control player-two" name="player2" placeholder="Player two username"><div class="input-group-btn one-player-button"><button type="button" class="btn btn-default">One player mode</button>/div></div>');
           $sign.append('<p><a class="btn btn-lg btn-success start-btn" href="#" role="button">Let\'s Play!</a></p>');
           $cont.append($sign);
         };
 
-        //function makes table dim and points at the drop down with a message...
-        this.infoSpot = () => {
+        //creates alert showing how the get info about the game...
+        this.clickInfo = () => {
 
-          let $here = $('<div class="contains-message shadow"></div>');
+          let $here = $('<div class="contains-message _hide _margin-auto"></div>');
 
-          $here.append('<span class="glyphicon glyphicon-arrow-up"></span>');
-
-          $here.append('<div class="alert"><p>Click<span class="glow">Game Info</span></p><p>to get started.</p></div>');
-
-          $('#table').addClass('dim');
-          $('.info a').addClass('glow');
+          $here.addClass('contains-message');
+          $here.append('<div class="alert  _off-white shadow"><p>Click <span class="_glow">Game Info</span></p><p>to get started.</p></div>');
+          $here.append('<span class="glyphicon glyphicon-arrow-down info-point"></span>');
           $cont.append($here);
+          //dims the table...
+          $('#table').addClass('_dim');
+        };
+
+        this.info = (player1, player2, scores) => {
+
+          let up = '<span class="glyphicon glyphicon-triangle-top up-arrow"></span>';
+          let down = '<span class="glyphicon glyphicon-triangle-bottom down-arrow"></span>';
+
+          //entire div...
+          let $infoB = $('<div class="jumbotron infoB _shadow _off-white _margin-auto _black-border">');
+
+          //top left corner
+          let $topLeft = $('<div class="_inline-block infoB-T infoB-TL"></div>');
+          $topLeft.append('<h3>' + player1 + '</h3>');
+          $topLeft.append('<div class="key _inline-block _black-border">A</div>');
+          $topLeft.append('<div class="key _inline-block">' + up + '</div');
+          $topLeft.append('<div class="key _inline-block _black-border">Z</div>');
+          $topLeft.append('<div class="key _inline-block">' + down +  '</div>')
+          $topLeft.append('<div class="_block">' + scores.left + '</div>');
+
+          //top right corner...
+          let $topRight = $('<div class="_inline-block infoB-T infoB-TR"></div>');
+          $topRight.append('<h3>' + player2 + '</h3>');
+          $topRight.append('<div class="key _inline-block _black-border">L</div>');
+          $topRight.append('<div class="key _inline-block">' + up + '</div');
+          $topRight.append('<div class="key _inline-block _black-border"><</div>');
+          $topRight.append('<div class="key _inline-block">' + down +  '</div>')
+          $topRight.append('<div class="_block">' + scores.right + '</div>');
+
+          //animate arrows...
+          this.animateArrow('.up-arrow');
+          this.animateArrow('.down-arrow', true);
+
+          //bottom...
+          let $bottom = $('<div class="_block infoB-Bot"></div>');
+          $bottom.append('<p>Press Enter To Start</p>')
+
+          //appending all children the infoB...
+          $infoB.append($topLeft, $topRight, $bottom);
+
+          $cont.append($infoB);
+
         };
       }
     }
+
     //start game...
     let start = new Utilities();
     start.welcome();
-    start.infoSpot();
+    start.clickInfo();
 
     //game...
     let game = new Game();
     game.board(20, 20, 960, 660);
-    // setInterval(game.moveBall, 1);
     //end//
 
     //left player...
@@ -217,8 +335,9 @@
     let doc = document;
 
     //event listeners...
-    //looks for up and down keys to be pressed for each side...
+    //keyboard events...
     doc.addEventListener('keydown', (event) => {
+      //paddle controls...
       if(event.keyCode === 65 || event.keyCode === 90){
         left.moveP(event);
         game.pLocation(left.returnCoords(), 'left');
@@ -228,6 +347,16 @@
         game.pLocation(right.returnCoords(), 'right');
       }
     });
+    //keyboard keyup listeners...
+    doc.addEventListener('keyup', (event) => {
+      //removes game info...
+      if(event.keyCode === 13 && $('.infoB')){
+        $('.infoB').remove();
+        $('#table').removeClass('_dim');
+        game.moveBall()
+      }
+    });
+    //click event listeners...
     doc.addEventListener('click', (event) => {
       let e = event;
       //removes the sign in sheet...
@@ -239,17 +368,49 @@
             $('#table, .dropdown').fadeIn({
               duration: '800',
               complete: function(){
+                //renders the get started message...
                 $('.contains-message').fadeIn({
-                  duration: 800
+                  duration: 800,
+                  complete: function(){
+                    //moves arrow down...
+                    start.moveArrow('.info-point');
+                  }
                 });
               }
             });
           }
         });
+        //waits for user to click let's play on the sign up sheet...
+        if(e.target.classList.contains('start-btn')){
+          //call function to update user information...
+          users.left = $('.player-one input').val() || 'player1';
+          users.right = $('.player-two input').val() || 'player2';
+        }
       }
-      //removes contians-message...
-      if(e.target.classList.contains('info'))
+      // removes contains-message...
+      if(e.target.classList.contains('info')){
+        $('.contains-message').fadeOut({
+          duration: '800',
+          complete: function(){
+            start.info(users.left, users.right, scores);
+            $('.info').removeClass('glow');
+            $('.infoB').fadeIn({
+              duration: 800
+            });
+          }
+        });
+      }
     });
     //end//
 
   })(window)
+
+
+
+
+
+
+
+
+
+

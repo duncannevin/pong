@@ -17,11 +17,42 @@
 		<!-- Latest compiled and minified CSS -->
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<style>
+
 			html, body, .container{
 				height: 100%;
 				width: 100%;
 				padding: 0;
 				background-color: rgb(34, 34, 34);
+			}
+			._dim{
+				opacity: .5;
+			}
+			._hide{
+				display: none;
+			}
+			._off-white{
+				background-color: rgb(238, 238, 238);
+			}
+			._inline-block{
+				display: inline-block;
+			}
+			._block{
+				display: inline-block;
+			}
+			._triangle{
+				width: 0;
+				height: 0;
+			}
+			._margin-auto{
+				margin: 0 auto;
+			}
+			._black-border{
+				border: 1px solid black;
+			}
+			._shadow{
+				-moz-box-shadow: 0 0 30px rgb(92, 184, 92);
+				-webkit-box-shadow: 0 0 30px rgb(92, 184, 92);
+				box-shadow: 0 0 30px rgb(92, 184, 92);
 			}
 			.navbar{
 				padding-left: 10px;
@@ -35,33 +66,24 @@
 			.container{
 				text-align: center;
 			}
-			.shadow{
-				-moz-box-shadow: 0 0 30px rgb(92, 184, 92);
-				-webkit-box-shadow: 0 0 30px rgb(92, 184, 92);
-				box-shadow: 0 0 30px rgb(92, 184, 92);
-			}
-			.contains-message, #table{
+			.contains-message, #table, .infoB{
 				border-radius: 6px;
 			}
-			#table, .sign-in, .contains-message{
-				background-color: rgb(238, 238, 238);
-			}
 			#table{
-				display: none;
 				height: 40em;
 				width: 60em;
 			}
-			#table, .sign-in{
-				border: 1px solid black;
-			}
-			.contains-message, .sign-in{
-				margin: 0 auto;
+			.score, .info a{
+				color: rgb(157, 157, 157);
 			}
 			.sign-in{
 				width: 40em;
 			}
-			.sign-in, #table{
+			.sign-in, #table, .score{
 				margin-top: 10em;
+			}
+			.left-score{
+				margin-right: 20em;
 			}
 			.glow{
 				animation: glow 3s infinite alternate;
@@ -83,21 +105,61 @@
 				width: 40%;
 			}
 			.info a{
-				color: rgb(157, 157, 157);
 				text-decoration: none;
 			}
-			.dim{
-				opacity: .5;
+			.contains-message, .infoB{
+				position: absolute;
+				left: 0;
+				right: 0;
 			}
 			.contains-message{
-				display: none;
+				top: 18.5em;
 				width: 10em;
 				font-weight: bold;
 				font-size: 20px;
 			}
-			.glyphicon{
+			.alert{
+				margin: 0 auto;
+			}
+			.infoB{
+				top: 15em;
+				height: 30em;
+				width: 40em;
+			}
+			.infoB-T, .infoB-Bot{
+				margin: 0 auto;
+			}
+			.infoB-T{
+				width: 50%;
+				height: 90%;
+			}
+			.infoB-TL{
+				border-right: 1px solid black;
+			}
+			.infoB-Bot{border-top: 1px solid black;
+				height: 9%;
+				width: 100%;
+			}
+			.key{
+				position: relative;
+				line-height: 3em;
+				font-size: 16px;
+				height: 3em;
+				width: 3em;
+			}
+			.info-point{
 				font-size: 40px;
 				padding-top: 6px;
+				margin-bottom: 40px;
+			}
+			.down-arrow, .up-arrow{
+				border: none;
+			}
+			.down-arrow, .up{
+				vertical-align: top;
+			}
+			.up-arrow, .down{
+				vertical-align: bottom;
 			}
 		</style>
 		<!-- makes page able to work on phones -->
@@ -113,8 +175,8 @@
   	</nav>
 
     <div class="container main-content">
-			<canvas id="table" class="shadow"></canvas>
-			<p class="info"><a href="#">Game Info</a></p>
+			<canvas id="table" class="_shadow _hide _black-border "></canvas>
+			<p class="info"><a class="info" href="#">Game Info</a></p>
     </div><!-- /.container -->
 		<!-- Latest compiled and minified JavaScript-->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
