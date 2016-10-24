@@ -54,6 +54,16 @@
 				-webkit-box-shadow: 0 0 30px rgb(92, 184, 92);
 				box-shadow: 0 0 30px rgb(92, 184, 92);
 			}
+			._glow{
+				animation: glow 3s infinite alternate;
+			}
+			@keyframes glow{
+				to{
+					box-shadow: 0 0 30px rgb(92, 184, 92);
+					text-shadow: 0 0 10px rgb(92, 184, 92);
+					color: rgb(238, 238, 238);
+				}
+			}
 			.navbar{
 				padding-left: 10px;
 				padding-right: 40px;
@@ -79,23 +89,14 @@
 			.sign-in{
 				width: 40em;
 			}
-			.sign-in, #table, .score{
-				margin-top: 10em;
+			.player-scores{border: 1px solid white;
+				height: 8em;
+				width: 60em;
 			}
 			.left-score{
 				margin-right: 20em;
 			}
-			.glow{
-				animation: glow 3s infinite alternate;
-			}
-			@keyframes glow{
-				to{
-					box-shadow: 0 0 30px rgb(92, 184, 92);
-					text-shadow: 0 0 10px rgb(92, 184, 92);
-					color: rgb(238, 238, 238);
-				}
-			}
-			.input-group{
+			.input-group, .btn{
 				margin-bottom: 5px;
 			}
 			.player-one, .player-two, .one-player-button button{
@@ -113,7 +114,7 @@
 				right: 0;
 			}
 			.contains-message{
-				top: 18.5em;
+				top: 17em;
 				width: 10em;
 				font-weight: bold;
 				font-size: 20px;
@@ -175,8 +176,9 @@
   	</nav>
 
     <div class="container main-content">
+    	<div class="player-scores _margin-auto"></div>
 			<canvas id="table" class="_shadow _hide _black-border "></canvas>
-			<p class="info"><a class="info" href="#">Game Info</a></p>
+			<div class="info"><a class="info-actual _hide" href="#">Game Info</a></div>
     </div><!-- /.container -->
 		<!-- Latest compiled and minified JavaScript-->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>

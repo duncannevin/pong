@@ -19,6 +19,12 @@
     scores.left = 0;
     scores.right = 0;
 
+    //global pause var, logs if the game is paused...
+    let pause = true;
+
+    //level chosen by user...
+    let level;
+
     //Functions for loading board and the ball...
     class Game{
       constructor() {
@@ -77,6 +83,7 @@
           //draw the ball...
           this.drawBall(ball[0] - (ballRadius-10), ball[1]);
 
+
           //watches for the ball to hit right paddle...
           if(ball[0] === coords.right[0] - (ballRadius)){
 
@@ -101,7 +108,9 @@
             this.score(side);
             //stops function...
             ball = [500, 350];
-            return;
+            dx = -dx;
+            //return a call to this function to serve the ball in the correct direction automatically...
+            return this.moveBall();
           }
 
           //allows the ball to bounce off the top and bottom walls...
@@ -112,8 +121,10 @@
 
           ball[0] += dx;
           ball[1] += dy;
-
-          setTimeout(this.moveBall, 8);
+          //if the game is not paused...
+          if(!pause){
+            setTimeout(this.moveBall, level);
+          }
         };
       }
     }
@@ -247,9 +258,10 @@
 
           let $sign= $('<div class="sign-in jumbotron _shadow _off-white _margin-auto _black-border"></div>');
 
-          $sign.append('<h2>Welcome to</h2><h1 class="glow">PONG!</h1>');
+          $sign.append('<h2>Welcome to</h2><h1 class="_glow">PONG!</h1>');
           $sign.append('<div class="input-group player-one"><input type="text" class="form-control" name="player1" placeholder="Player one username"></div>');
           $sign.append('<div class="input-group player-two"><input type="text" class="form-control player-two" name="player2" placeholder="Player two username"><div class="input-group-btn one-player-button"><button type="button" class="btn btn-default">One player mode</button>/div></div>');
+          $sign.append('<div class="btn-group" role="group" aria-label="..."><button type="button" id="hard-5" class="btn btn-default  level">hard</button><button type="button" id="difficult-3" class="btn btn-default level">difficult</button><button type="button" id="impossible-1" class="btn btn-default level">impossible</button></div>')
           $sign.append('<p><a class="btn btn-lg btn-success start-btn" href="#" role="button">Let\'s Play!</a></p>');
           $cont.append($sign);
         };
@@ -353,7 +365,8 @@
       if(event.keyCode === 13 && $('.infoB')){
         $('.infoB').remove();
         $('#table').removeClass('_dim');
-        game.moveBall()
+        pause = false;//unpauses games.
+        game.moveBall();//starts the ball moving.
       }
     });
     //click event listeners...
@@ -361,44 +374,53 @@
       let e = event;
       //removes the sign in sheet...
       if(e.target.classList.contains('start-btn')){
-        $('.sign-in').fadeOut({
-          duration: '800',
-          complete: function(){
-            //renders the board...
-            $('#table, .dropdown').fadeIn({
-              duration: '800',
-              complete: function(){
-                //renders the get started message...
-                $('.contains-message').fadeIn({
-                  duration: 800,
-                  complete: function(){
-                    //moves arrow down...
-                    start.moveArrow('.info-point');
-                  }
-                });
-              }
-            });
-          }
-        });
-        //waits for user to click let's play on the sign up sheet...
-        if(e.target.classList.contains('start-btn')){
-          //call function to update user information...
+        if(level !== undefined){
+          $('.sign-in').fadeOut({
+            duration: '800',
+            complete: function(){
+              //renders the board...
+              $('#table, .dropdown').fadeIn({
+                duration: '800',
+                complete: function(){
+                  //renders the get started message...
+                  $('.contains-message').fadeIn({
+                    duration: 800,
+                    complete: function(){
+                      //moves arrow down...
+                      start.moveArrow('.info-point');
+                      $('.info a').fadeIn({
+                        duration: 800
+                      });
+                    }
+                  });
+                }
+              });
+            }
+          });
+          //update user object...
           users.left = $('.player-one input').val() || 'player1';
           users.right = $('.player-two input').val() || 'player2';
+        }else{
+          alert('Please select a level');
         }
       }
       // removes contains-message...
-      if(e.target.classList.contains('info')){
+      if(e.target.classList.contains('info-actual')){
+        pause = true;//pauses game in it's tracks.
         $('.contains-message').fadeOut({
           duration: '800',
           complete: function(){
             start.info(users.left, users.right, scores);
-            $('.info').removeClass('glow');
             $('.infoB').fadeIn({
               duration: 800
             });
           }
         });
+      }
+      //gathers difficulty choice...
+      if(e.target.classList.contains('level')){
+        level = Number(e.target.id.split('-').pop());
+        console.log(level);
       }
     });
     //end//
