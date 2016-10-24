@@ -108,7 +108,7 @@
             this.score(side);
             //stops function...
             ball = [500, 350];
-            dx = -dx;
+            dy = -dy;
             //return a call to this function to serve the ball in the correct direction automatically...
             return this.moveBall();
           }
