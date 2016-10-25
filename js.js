@@ -311,7 +311,7 @@
 
           //bottom...
           let $bottom = $('<div class="_block infoB-Bot"></div>');
-          $bottom.append('<p>Press Enter To Start</p>')
+          $bottom.append('<p>Press Spacebar To Start or Pause</p>')
 
           //appending all children the infoB...
           $infoB.append($topLeft, $topRight, $bottom);
@@ -359,16 +359,30 @@
         game.pLocation(right.returnCoords(), 'right');
       }
     });
+
     //keyboard keyup listeners...
     doc.addEventListener('keyup', (event) => {
       //removes game info...
-      if(event.keyCode === 13 && $('.infoB')){
-        $('.infoB').remove();
-        $('#table').removeClass('_dim');
-        pause = false;//unpauses games.
-        game.moveBall();//starts the ball moving.
+      if(event.keyCode === 32 && $('.infoB')){//space bar.
+        //removes the user info and starts the game...
+        if(pause){
+          $('.infoB').remove();
+          $('.contains-message').remove();
+          $('#table').removeClass('_dim');
+          pause = false;//unpauses games.
+          game.moveBall();
+        }else{
+          //pauses the game...
+         start.info(users.left, users.right, scores);
+         $('#table').removeClass('_dim');
+          $('.infoB').fadeIn({
+            duration: 800
+          });
+          pause = true;//pauses the game.
+        }
       }
     });
+
     //click event listeners...
     doc.addEventListener('click', (event) => {
       let e = event;
@@ -397,6 +411,7 @@
               });
             }
           });
+
           //update user object...
           users.left = $('.player-one input').val() || 'player1';
           users.right = $('.player-two input').val() || 'player2';
@@ -404,7 +419,8 @@
           alert('Please select a level');
         }
       }
-      // removes contains-message...
+
+      // removes 'get started' helper...
       if(e.target.classList.contains('info-actual')){
         pause = true;//pauses game in it's tracks.
         $('.contains-message').fadeOut({
@@ -417,10 +433,10 @@
           }
         });
       }
+
       //gathers difficulty choice...
       if(e.target.classList.contains('level')){
         level = Number(e.target.id.split('-').pop());
-        console.log(level);
       }
     });
     //end//
